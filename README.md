@@ -9,18 +9,18 @@ En caso de no tener instalado pipenv, puedes descargarlo ejecutando este comando
 ```
 pip install pipenv
 ```
-Las dependencias registradas están en el archivo Pipfile, a continuación se muestra cómo instalarlas, y cómo ejecutar el entorno virtual:
+Las dependencias registradas están en el archivo Pipfile, para instalarlas, se debe ejectuar el siguiente comando:
 
 ```
 pipenv install 
-pipenv shell
 ```
 
 **IMPORTANTE: Recuerda seleccionar el intérprete del entorno vintual en tu IDE, y así evitar conflictos de versiones**
 
-Luego, para ejecutar la app:
+Luego, para ejecutar la app **dentro del entorno virtual**:
 
 ```
+pipenv shell
 python manage.py migrate
 python manage.py runserver
 ```
