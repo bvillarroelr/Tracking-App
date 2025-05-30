@@ -1,8 +1,8 @@
 # Tracking App
 Aplicación móvil para el rastreo y gestión de pedidos para una empresa e-commerce, con visualización web para administradores.
 
-# Instrucciones de uso
-Este proyecto utiliza el ambiente virtual pipenv para manejar los paquetes y dependencias instaladas (Django, etc.)
+# Back-end
+Se debe utilizar el ambiente virtual pipenv para manejar los paquetes y dependencias instaladas (Django principalmente)
 
 En caso de no tener instalado pipenv, puedes descargarlo ejecutando este comando:
 
@@ -25,6 +25,11 @@ python manage.py migrate
 python manage.py runserver
 ```
 
+# Front-end
+Se debe tener instalado Node.js y React
+
+# Mobile
+React Native
 
 
 
