@@ -1,3 +1,7 @@
-from django.contrib import admin
+from .models import Paquete, Usuario, Estado_entrega, Ruta
 
-# Register your models here.
+admin.site.register(Paquete)
+admin.site.register(Usuario)
+admin.site.register(Estado_entrega)
+admin.site.register(Ruta)
+

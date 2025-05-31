@@ -1,6 +1,7 @@
-from django.shortcuts import render
-from django.http import HttpResponse
+from rest_framework import viewsets
+from .models import Paquete
+from .serializers import PaqueteSerializer
 
-# Create your views here.
-def index(request):
-    return HttpResponse("Hola mundo")
+class PaqueteViewSet(viewsets.ModelViewSet):
+    queryset = Paquete.objects.all()
+    serializer_class = PaqueteSerializer
