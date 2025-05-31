@@ -5,41 +5,44 @@ PRAGMA foreign_keys = ON;
 -- Tabla de Usuarios
 
 CREATE TABLE usuario (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    nombre TEXT NOT NULL,
-    correo TEXT UNIQUE NOT NULL,
-    tipo_usuario TEXT NOT NULL CHECK (tipo_usuario IN ('cliente', 'conductor', 'admin')),
-    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    usuario_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    usuario_nombre TEXT NOT NULL,
+    usuario_correo TEXT UNIQUE NOT NULL,
+    usuario_tipo TEXT NOT NULL CHECK (usuario_tipo IN ('cliente', 'conductor', 'admin')),
+    usuario_fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    usuario_auth_token TEXT UNIQUE
+
 );
 
 -- Tabla de Estados de Entrega
 
 CREATE TABLE estado_entrega (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    estado TEXT UNIQUE NOT NULL
+    estado_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    estado_nombre TEXT UNIQUE NOT NULL
 );
 
 -- Tabla de Rutas
 
 CREATE TABLE ruta (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    origen TEXT NOT NULL,
-    destino TEXT NOT NULL,
-    distancia_km REAL NOT NULL,
-    duracion_estimada_min INTEGER NOT NULL
+    ruta_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ruta_origen TEXT NOT NULL,
+    ruta_destino TEXT NOT NULL,
+    ruta_distancia_km REAL NOT NULL,
+    ruta_duracion_estimada_min INTEGER NOT NULL
 );
 
 -- Tabla de Paquetes
 
 CREATE TABLE paquete (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    paquete_id INTEGER PRIMARY KEY AUTOINCREMENT,
     usuario_id INTEGER NOT NULL,
     ruta_id INTEGER,
     estado_id INTEGER,
-    peso REAL NOT NULL,
-    dimensiones TEXT,
-    fecha_envio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (usuario_id) REFERENCES usuario(id) ON DELETE CASCADE,
-    FOREIGN KEY (ruta_id) REFERENCES ruta(id) ON DELETE SET NULL,
-    FOREIGN KEY (estado_id) REFERENCES estado_entrega(id) ON DELETE SET NULL
+    paquete_peso REAL NOT NULL,
+    paquete_dimensiones TEXT,
+    paquete_fecha_envio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (usuario_id) REFERENCES usuario(usuario_id) ON DELETE CASCADE,
+    FOREIGN KEY (ruta_id) REFERENCES ruta(ruta_id) ON DELETE SET NULL,
+    FOREIGN KEY (estado_id) REFERENCES estado_entrega(estado_id) ON DELETE SET NULL
 );
