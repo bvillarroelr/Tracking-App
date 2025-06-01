@@ -74,6 +74,7 @@ class Usuario(models.Model):
     usuario_correo = models.EmailField(unique=True, max_length=254)
     usuario_tipo = models.CharField(max_length=20, choices=TIPO_USUARIO, default='cliente')
     usuario_fecha_registro = models.DateTimeField(auto_now_add=True)  
+    usuario_contrasena = models.CharField(max_length=128) # -> almacenar hash de la contraseña
 
     # token autenticación para la app móvil
     usuario_auth_token = models.CharField(max_length=255, blank=True, null=True)

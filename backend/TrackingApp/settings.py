@@ -25,7 +25,8 @@ SECRET_KEY = 'django-insecure-7y3jzf!c0okel*6%h6-njk5^p*-g-w)_)u$cjs_*m@ypk=7)il
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# '*' para permitir que Django acepte conexiones externas (se restringe en producción)
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -47,8 +48,6 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
 
     ]
-
-
 
 }
 

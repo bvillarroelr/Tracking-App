@@ -10,9 +10,10 @@ CREATE TABLE usuario (
     usuario_correo TEXT UNIQUE NOT NULL,
     usuario_tipo TEXT NOT NULL CHECK (usuario_tipo IN ('cliente', 'conductor', 'admin')),
     usuario_fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    usuario_contrasena TEXT NOT NULL,
+
 
     usuario_auth_token TEXT UNIQUE
-
 );
 
 -- Tabla de Estados de Entrega
