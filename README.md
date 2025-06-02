@@ -70,6 +70,8 @@ npx expo start
 
 Aparecerá un código QR en la terminal, el cual se debe escanear con la aplicación Expo Go instalada en el dispositivo móvil.
 
+**NOTA**: Tanto el dispositivo móvil como el PC deben estar conectados a la misma red WiFi.
+
 Finalmente, para levantar el backend al que se conectará la aplicación móvil, se debe ejecutar el siguiente comando en una terminal diferente,
 y estando previamente dentro del entorno virtual de pipenv:
 
