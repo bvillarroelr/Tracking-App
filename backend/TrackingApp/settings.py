@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-7y3jzf!c0okel*6%h6-njk5^p*-g-w)_)u$cjs_*m@ypk=7)il
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-# '*' para permitir que Django acepte conexiones externas (se restringe en producción)
+# '*' para permitir que Django acepte conexiones externas (se restringe en producción), esto permite que la app móvil se conecte al servidor
 ALLOWED_HOSTS = ['*']
 
 
@@ -46,7 +46,6 @@ INSTALLED_APPS = [
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
-
     ]
 
 }

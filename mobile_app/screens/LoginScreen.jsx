@@ -35,7 +35,7 @@ export default function LoginScreen({ navigation })
             const response = await loginUser({ correo, contrasena });
             
             // -> guardar token en AsyncStorage
-            await AsyncStorage.setItem('authToken', response.token);
+            await AsyncStorage.setItem('token', response.token);
         
             // -> navegar a mainscreen
             navigation.navigate('Main');

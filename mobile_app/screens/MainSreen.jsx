@@ -12,7 +12,13 @@ export default function MainScreen({ navigation })
         <Text style={styles.text}>Esta es la pantalla main kumpa</Text>
 
         <View style={styles.buttonContainer}>
+        
         <Button title="Registrar paquete" onPress={() => navigation.navigate('RegisterPackage')} />
+        
+        <View style={{ marginTop: 10 }} />
+
+        <Button title="Mis envíos" onPress={() => navigation.navigate('ListPackages')} />
+
 
         </View>
 

@@ -43,7 +43,7 @@ class Paquete(models.Model):
     estado = models.ForeignKey('Estado_entrega', models.DO_NOTHING, to_field='estado_id', blank=True, null=True)
     paquete_peso = models.FloatField()
     paquete_dimensiones = models.TextField(blank=True, null=True)
-    paquete_fecha_envio = models.DateField(blank=True, null=True)  
+    paquete_fecha_envio = models.DateTimeField(blank=True, null=True)  
 
     class Meta:
         managed = False

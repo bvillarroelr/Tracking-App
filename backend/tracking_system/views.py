@@ -6,11 +6,12 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authtoken.models import Token
+from rest_framework.permissions import AllowAny
 
 import uuid # -> para generar tokens únicos
 from django.contrib.auth.hashers import make_password, check_password # -> para hashing y verificación de contraseñas
 
-from datetime import date
+from datetime import datetime
 
 """
 ViewSet: clase de django REST Framework que agrupa automáticamente varias vistas (endpoints)
@@ -34,6 +35,7 @@ class EstadoEntregaViewSet(viewsets.ModelViewSet):
 class RutaViewSet(viewsets.ModelViewSet):
     queryset = Ruta.objects.all()
     serializer_class = RutaSerializer
+
 
 # -> ENDPOINT DE PRUEBA PARA TESTEAR CONEXIÓN CON LA API
 
@@ -109,16 +111,22 @@ class UserLoginView(APIView):
 
 # TODO: usuario asociado a paquete es el remitente o destinatario? por ahora se asumirá como remitente, modificar/revisar luego
 class PaqueteRegisterView(APIView):
+ 
+    # -> desactiva autenticación por defecto de Django REST
+    authentication_classes = [] 
+
+    # -> permitir acceso a cualquier usuario (ya que se está usando token personalizado, no el de Django REST Framework)
+    permission_classes = [AllowAny] 
     
+    # -> método POST para registro de paquetes
     def post(self, request):
-        
-        # -> se obtiene y valida el token del header
-        token = request.headers.get('Authorization', '').replace('Token ', '')
+        token = request.headers.get('Authorization', '').replace('token ', '')
         usuario = Usuario.objects.filter(usuario_auth_token=token).first()
         
-        # TODO: revisar acá porque no está funcionando el token
+        print(f"Token recibido: {token}")
+
         if not usuario:
-            return Response({'error', 'Token inválido'}, status=401)
+            return Response({'error': 'Token inválido'}, status=401)
         
         data = request.data
 
@@ -139,13 +147,77 @@ class PaqueteRegisterView(APIView):
             usuario=usuario,
             paquete_peso=data['peso'],
             paquete_dimensiones=data['dimensiones'],
-            paquete_fecha_envio=data.get('fecha_envio', date.today()),
+            paquete_fecha_envio=data.get('fecha_envio', datetime.now().replace(microsecond=0)),
             estado=estado_inicial
         )
 
-        return Response({'message': 'Paquete registrado exitosamente', 'paqute_id': paquete.paquete_id}, status=201)
+        return Response({'message': 'Paquete registrado exitosamente', 'paquete_id': paquete.paquete_id}, status=201)
+    
+# -> endpoint para listar todos los paquetes de un usuario
+
+class PaqueteListView(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        token = request.headers.get('Authorization', '').replace('token ', '')
+        usuario = Usuario.objects.filter(usuario_auth_token=token).first()
+
+        print(f"Token recibido: {token}")
+
+        if not usuario:
+            return Response({'error': 'Token inválido'}, status=401)
+    
+        paquetes = Paquete.objects.filter(usuario=usuario).order_by('paquete_id') # -> se ordenan por ID (ascendente)
+        data = [
+            {
+                'id': paquete.paquete_id,
+                'peso': paquete.paquete_peso,
+                'dimensiones': paquete.paquete_dimensiones,
+                'fecha_envio': paquete.paquete_fecha_envio,
+                'estado': paquete.estado.estado_nombre
+            }
+            for paquete in paquetes
+        ]
+
+        return Response(data)
 
 
+# -> endpoint para obtener detalles de un paquete específico
+
+class PaqueteDetailView(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+    
+    def get(self, request, id):
+        token = request.headers.get('Authorization', '').replace('token ', '')
+        usuario = Usuario.objects.filter(usuario_auth_token=token).first()
+ 
+        print(f"Token recibido: {token}")
+
+        if not usuario:
+            return Response({'error': 'Token inválido'}, status=401)
+
+        paquete = Paquete.objects.filter(paquete_id=id, usuario=usuario).first()
+        if not paquete:
+            return Response({'error': 'Paquete no encontrado'}, status=404)
+        
+        data = {
+            'id': paquete.paquete_id,
+            'peso': paquete.paquete_peso,
+            'dimensiones': paquete.paquete_dimensiones,
+            'fecha_envio': paquete.paquete_fecha_envio,
+            'estado': paquete.estado.estado_nombre,
+            'ruta': {
+                'origen': paquete.ruta.ruta_origen if paquete.ruta else None,
+                'destino': paquete.ruta.ruta_destino if paquete.ruta else None,
+                'distancia_km': paquete.ruta.ruta_distancia_km if paquete.ruta else None,
+                'duracion_estimada_min': paquete.ruta.ruta_duracion_estimada_min if paquete.ruta else None
+            }
+
+        }
+        
+        return Response(data, status=200)
 
 
 

@@ -12,7 +12,8 @@ export const fetchData = async (endpoint, method = "GET", body = null, token = n
     
     if(token)
     {
-        headers["Authorization"] = `Token ${token}`;
+        console.log("token enviado:", token);
+        headers["Authorization"] = `token ${token}`;
     }
     
     const response = await fetch(`${BASE_URL}${endpoint}`, {
