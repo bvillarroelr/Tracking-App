@@ -29,8 +29,55 @@ python manage.py runserver
 Se debe tener instalado Node.js y React
 
 # Mobile
-React Native
+Se usa React Native junto con Expo.
 
+Se debe tener previamente instalado Expo CLI. Si no se tiene: 
 
+```
+npm install -g expo-cli
+```
+
+O bien con yarn:
+
+```
+yarn global add expo-cli
+```
+
+Para instalar las dependencias de la aplicación móvil, desde la raíz del proyecto:
+
+```
+cd mobile_app
+
+npm install
+#o
+yarn install
+```
+
+Previo a ejecutar la aplicación, se debe editar el archivo './mobile_app/api/index.js' y cambiar la URL a la IP local del PC donde se esté ejecutando el backend:
+
+```javascript
+
+const BASE_URL = "http://<IP_LOCAL>:8000/api/"; 
+```
+
+Para ejecutar la aplicación móvil, desde la raíz del proyecto:
+
+```
+cd mobile_app
+
+npx expo start
+```
+
+Aparecerá un código QR en la terminal, el cual se debe escanear con la aplicación Expo Go instalada en el dispositivo móvil.
+
+Finalmente, para levantar el backend al que se conectará la aplicación móvil, se debe ejecutar el siguiente comando en una terminal diferente,
+y estando previamente dentro del entorno virtual de pipenv:
+
+(desde raíz del proyecto):
+```
+cd backend
+
+python manage.py runserver 0.0.0.0:8000
+```
 
 
