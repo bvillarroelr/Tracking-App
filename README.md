@@ -28,6 +28,17 @@ python manage.py runserver
 # Front-end
 Se debe tener instalado Node.js y React
 
+En caso de ser primera vez que se ejecuta el front
+```
+npm install
+```
+
+Luego
+```
+npm start
+```
+
+(Recordar que corre en localhost:3000, a diferencia de Django que es en localhost:8000)
 # Mobile
 React Native
 

@@ -1,23 +1,17 @@
-import logo from './logo.svg';
-import './App.css';
+import React from 'react';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div style={{ padding: '2rem', fontFamily: 'Arial, sans-serif' }}>
+      <h1>📦 Panel de Administración</h1>
+      <p>Bienvenido al sistema de seguimiento de pedidos.</p>
+
+      <hr style={{ margin: '2rem 0' }} />
+
+      <section>
+        <h2>Resumen</h2>
+        <p>Pronto cargaremos los datos de paquetes desde el backend aquí mismo.</p>
+      </section>
     </div>
   );
 }
