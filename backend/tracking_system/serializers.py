@@ -2,6 +2,10 @@ from rest_framework import serializers
 from .models import Paquete, Usuario, Estado_entrega, Ruta
 
 class PaqueteSerializer(serializers.ModelSerializer):
+    estado_nombre = serializers.CharField(source='estado.estado_nombre', read_only=True)    
+    usuario_nombre = serializers.CharField(source='usuario.usuario_nombre', read_only=True)
+
+
     class Meta:
         model = Paquete
         fields = '__all__'

@@ -13,7 +13,7 @@ router = DefaultRouter()
 # Quizá router con viewsets puedan tener utilidad futura (ej: para admins en la app web), y así se separa de los endpoints
 # manuales con los que se comunica la app móvil (también habría que cambiar las rutas a ej: r'paquetes-admin')
 
-# router.register(r'paquetes', PaqueteViewSet)
+router.register(r'paquetes-admin', PaqueteViewSet, basename='paquetes-admin')
 # router.register(r'usuarios', UsuarioViewSet)
 # router.register(r'estados_entrega', EstadoEntregaViewSet)
 # router.register(r'rutas', RutaViewSet)
