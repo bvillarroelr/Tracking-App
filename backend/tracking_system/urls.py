@@ -4,6 +4,8 @@ from .views import PaqueteViewSet, EstadoEntregaViewSet, UsuarioViewSet, RutaVie
 
 from .views import UserRegisterView, UserLoginView, PingView, PaqueteRegisterView, PaqueteListView, PaqueteDetailView
 
+from .views import GenerarRutaView
+
 # router registra los viewsets creados y crea automáticamente las rutas para ellos.
 # con esto ya se pueden usar los endpoints desde por ejemplo la app móvil
 router = DefaultRouter()
@@ -29,5 +31,7 @@ urlpatterns = [
     path('paquetes/registrar_paquete/', PaqueteRegisterView.as_view(), name='registrar_paquete'),
     path('paquetes/listar_paquetes/', PaqueteListView.as_view(), name='listar_paquetes'),
     path('paquetes/<int:id>/', PaqueteDetailView.as_view(), name='detalle_paquete'),
+
+    path('generar_ruta/', GenerarRutaView.as_view(), name='generar_ruta'),
 
 ]
