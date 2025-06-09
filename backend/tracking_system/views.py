@@ -14,6 +14,9 @@ from django.contrib.auth.hashers import make_password, check_password # -> para 
 
 from datetime import datetime
 
+import requests
+from django.conf import settings
+
 """
 ViewSet: clase de django REST Framework que agrupa automáticamente varias vistas (endpoints)
          para un modelo en una sola clase, y gestiona operaciones CRUD automáticamente.
@@ -226,4 +229,26 @@ class PaqueteDetailView(APIView):
         return Response(data, status=200)
 
 
+# endpoint para generar una ruta entre origen y destino usando Google Maps API
 
+class GenerarRutaView(APIView):
+    def post(self, request):
+        origen = request.data.get('origen')  # {'lat': ..., 'lng': ...}
+        destino = request.data.get('destino')
+        if not origen or not destino:
+            return Response({'error': 'Origen y destino requeridos'}, status=400)
+        url = "https://routes.googleapis.com/directions/v2:computeRoutes"
+        headers = {
+            "Content-Type": "application/json",
+            "X-Goog-Api-Key": settings.GOOGLE_MAPS_API_KEY,
+            "X-Goog-FieldMask": "routes.polyline.encodedPolyline,routes.distanceMeters,routes.duration"
+        }
+        data = {
+            "origin": {"location": {"latLng": origen}},
+            "destination": {"location": {"latLng": destino}},
+            "travelMode": "DRIVE"
+        }
+        resp = requests.post(url, json=data, headers=headers)
+        if resp.status_code != 200:
+            return Response({'error': 'Error consultando Google Maps'}, status=500)
+        return Response(resp.json())
