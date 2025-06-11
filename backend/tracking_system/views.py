@@ -284,16 +284,21 @@ class PaqueteDetailView(APIView):
 
 class GenerarRutaView(APIView):
     def post(self, request):
+        
         origen = request.data.get('origen')  # {'lat': ..., 'lng': ...}
         destino = request.data.get('destino')
+        
         if not origen or not destino:
             return Response({'error': 'Origen y destino requeridos'}, status=400)
+        
         url = "https://routes.googleapis.com/directions/v2:computeRoutes"
+        
         headers = {
             "Content-Type": "application/json",
             "X-Goog-Api-Key": settings.GOOGLE_MAPS_API_KEY,
             "X-Goog-FieldMask": "routes.polyline.encodedPolyline,routes.distanceMeters,routes.duration"
         }
+
         data = {
             "origin": {"location": {"latLng": origen}},
             "destination": {"location": {"latLng": destino}},

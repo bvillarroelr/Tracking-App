@@ -2,7 +2,7 @@
 
 
 // NOTE: Esta ip debe ser la del pc donde se está corriendo el back, no la de Django
-const BASE_URL = "http://192.168.1.16:8000/api/"; // -> ajustar según ip local host
+const BASE_URL = "http://192.168.236.236:8000/api/"; // -> ajustar según ip local host
 
 export const fetchData = async (endpoint, method = "GET", body = null, token = null) => {
 
