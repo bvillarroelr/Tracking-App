@@ -227,22 +227,63 @@ class PaqueteDetailView(APIView):
 
 class GenerarRutaView(APIView):
     def post(self, request):
-        origen = request.data.get('origen')  # {'lat': ..., 'lng': ...}
-        destino = request.data.get('destino')
-        if not origen or not destino:
-            return Response({'error': 'Origen y destino requeridos'}, status=400)
+        paquete_ids = request.data.get('paquete_ids', [])
+        if not paquete_ids:
+            return Response({'error': 'Debes enviar al menos un paquete'}, status=400)
+
+        paquetes = list(Paquete.objects.filter(paquete_id__in=paquete_ids).select_related('ruta'))
+        paquetes.sort(key=lambda p: paquete_ids.index(p.paquete_id))  # Mantener el orden recibido
+
+        def geocode(direccion):
+            url = "https://maps.googleapis.com/maps/api/geocode/json"
+            params = {"address": direccion, "key": settings.GOOGLE_MAPS_API_KEY}
+            resp = requests.get(url, params=params).json()
+            if resp['status'] == 'OK':
+                loc = resp['results'][0]['geometry']['location']
+                return loc['lat'], loc['lng']
+            return None, None
+
+        # Origen y destino
+        if len(paquetes) == 1:
+            origen = paquetes[0].ruta.ruta_origen if paquetes[0].ruta else None
+            destino = paquetes[0].paquete_destino
+            waypoints = []
+        else:
+            origen = paquetes[0].ruta.ruta_origen if paquetes[0].ruta else None
+            destino = paquetes[-1].paquete_destino
+            # Waypoints: destinos de los paquetes intermedios
+            waypoints = []
+            for p in paquetes[1:-1]:
+                lat, lng = geocode(p.paquete_destino)
+                if None in (lat, lng):
+                    return Response({'error': f'No se pudo geocodificar el destino del paquete {p.paquete_id}'}, status=400)
+                waypoints.append({"location": {"latLng": {"latitude": lat, "longitude": lng}}})
+
+        if not origen:
+            return Response({'error': 'No se encontró origen en el paquete'}, status=400)
+        lat_o, lng_o = geocode(origen)
+        if None in (lat_o, lng_o):
+            return Response({'error': 'No se pudo geocodificar el origen'}, status=400)
+
+        lat_d, lng_d = geocode(destino)
+        if None in (lat_d, lng_d):
+            return Response({'error': 'No se pudo geocodificar el destino'}, status=400)
+
         url = "https://routes.googleapis.com/directions/v2:computeRoutes"
         headers = {
             "Content-Type": "application/json",
             "X-Goog-Api-Key": settings.GOOGLE_MAPS_API_KEY,
-            "X-Goog-FieldMask": "routes.polyline.encodedPolyline,routes.distanceMeters,routes.duration"
+            "X-Goog-FieldMask": "routes.polyline.encodedPolyline"
         }
         data = {
-            "origin": {"location": {"latLng": origen}},
-            "destination": {"location": {"latLng": destino}},
+            "origin": {"location": {"latLng": {"latitude": lat_o, "longitude": lng_o}}},
+            "destination": {"location": {"latLng": {"latitude": lat_d, "longitude": lng_d}}},
             "travelMode": "DRIVE"
         }
+        if waypoints:
+            data["intermediates"] = waypoints
+
         resp = requests.post(url, json=data, headers=headers)
         if resp.status_code != 200:
-            return Response({'error': 'Error consultando Google Maps'}, status=500)
+            return Response({'error': 'Error consultando Google Routes API'}, status=500)
         return Response(resp.json())

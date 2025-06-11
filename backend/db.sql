@@ -1,4 +1,4 @@
--- Habilitar claves foráneas en SQLite
+-- Habilitar claves forï¿½neas en SQLite
 
 PRAGMA foreign_keys = ON;
 
@@ -42,6 +42,7 @@ CREATE TABLE paquete (
     estado_id INTEGER,
     paquete_peso REAL NOT NULL,
     paquete_dimensiones TEXT,
+    paquete_destino TEXT NOT NULL,
     paquete_fecha_envio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (usuario_id) REFERENCES usuario(usuario_id) ON DELETE CASCADE,
     FOREIGN KEY (ruta_id) REFERENCES ruta(ruta_id) ON DELETE SET NULL,
