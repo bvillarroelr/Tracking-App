@@ -1,3 +1,3 @@
-import { fetchData } from './index';
+import { fetchData, fetchDataProject } from './index';
 
-export const loginAdmin = (credentials) => fetchData('api-token-auth/', 'POST', credentials);
+export const loginAdmin = (credentials) => fetchDataProject('api-token-auth/', 'POST', credentials);

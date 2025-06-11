@@ -2,13 +2,32 @@ import React, { useEffect, useState } from 'react';
 
 import LoginForm from './LoginForm';
 import { paqueteList } from './api/paquetes'; 
+import RegisterDriver from './RegisterDriver';
 
-function App() {
+
+export default function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [paquetes, setPaquetes] = useState([]);
     const [error, setError] = useState('');
 
+    const [mostrarRegistroConductor, setMostrarRegistroConductor] = useState(false);
+
+    const [mensajeRegistro, setMensajeRegistro] = useState('');
+
+    // -> formateo de fecha
+    const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        return date.toLocaleString('es-CL', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+        });
+    }
+
     useEffect(() => {
+        // localStorage.removeItem('token'); // -> descomentar para eliminar token de la sesión (para forzar login)
         const token = localStorage.getItem('token'); // -> se obtiene el token de la sesión
         if (token) {
             setIsAuthenticated(true);
@@ -41,6 +60,25 @@ function App() {
         <div style={{ padding: '2rem', fontFamily: 'Arial, sans-serif' }}>
         <h1>📦 Panel de Administración</h1>
         <p>Bienvenido al sistema de seguimiento de pedidos.</p>
+ 
+        <div>
+        <button onClick={() => setMostrarRegistroConductor(!mostrarRegistroConductor)}>
+        {mostrarRegistroConductor ? 'Ocultar Formulario' : 'Registrar Transportista'}
+        </button>
+
+        {mostrarRegistroConductor && (
+            <RegisterDriver
+            onRegisterSuccess={() => {
+                setMostrarRegistroConductor(false);
+                setMensajeRegistro('Conductor registrado exitosamente.');
+            }}
+            onCancel={() => setMostrarRegistroConductor(false)}
+            />
+        )}
+
+        {mensajeRegistro && <p style={{ color: 'green' }}>{mensajeRegistro}</p>}
+
+        </div>
 
         <hr style={{ margin: '2rem 0' }} />
 
@@ -64,10 +102,13 @@ function App() {
                 }}
                 >
                 <p><strong>ID:</strong> {paquete.paquete_id}</p>
-                <p><strong>Nombre del cliente:</strong> {paquete.usuario_nombre}</p>
+                <p><strong>Nombre del cliente:</strong> {paquete.usuario_nombre} {paquete.usuario_apellido}</p>
+                <p><strong>Correo electrónico:</strong> {paquete.usuario_correo}</p>
                 <p><strong>Peso:</strong> {paquete.paquete_peso} kg</p>
+                <p><strong>Dimensiones:</strong> {paquete.paquete_dimensiones}cm</p>
+                <p><strong>Descripción:</strong> {paquete.paquete_descripcion}</p>
                 <p><strong>Estado:</strong> {paquete.estado_nombre|| paquete.estado}</p>
-                <p><strong>Fecha de Envío:</strong> {paquete.paquete_fecha_envio}</p>
+                <p><strong>Fecha de Envío:</strong> {formatDate(paquete.paquete_fecha_envio)}</p>
                 </li>
             ))}
             </ul>
@@ -78,4 +119,3 @@ function App() {
     );
 }
 
-export default App;

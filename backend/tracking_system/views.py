@@ -13,8 +13,8 @@ import uuid # -> para generar tokens únicos
 from django.contrib.auth.hashers import make_password, check_password # -> para hashing y verificación de contraseñas
 
 from datetime import datetime
+from django.utils import timezone
 
-import requests
 from django.conf import settings
 
 """
@@ -33,9 +33,50 @@ class PaqueteViewSet(viewsets.ModelViewSet):
     serializer_class = PaqueteSerializer
     permission_classes = [IsAdminUser] # -> solo staff/superusers pueden acceder a estos endpoints
 
+
+# -> NOTE: este viewset es para usuarios conductores, no clientes. Admins registran conductores acá
 class UsuarioViewSet(viewsets.ModelViewSet):
     queryset = Usuario.objects.all()
     serializer_class = UsuarioSerializer
+    permission_classes = [IsAdminUser] # -> solo staff/superusers pueden acceder a estos endpoints
+
+    def get_queryset(self):
+        return Usuario.objects.filter(usuario_tipo='conductor') # -> filtrar solo conductores
+
+    # -> método para crear un nuevo usuario conductor
+    def create(self, request, *args, **kwargs):
+        print("DATA RECIBIDA:", request.data)
+
+
+        data = request.data
+
+        # -> verificación completitud de campos
+        required_fields = ['usuario_nombre', 'usuario_apellido', 'usuario_correo', 'usuario_contrasena']
+        for field in required_fields:
+            value = data.get(field)
+            if value is None or str(value).strip() == '':
+                return Response({'Error': f'El campo "{field}" es obligatorio.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # -> verificación correo ya registrado
+        if Usuario.objects.filter(usuario_correo=data['usuario_correo']).exists():
+            return Response({'Error': 'El correo ya está registrado.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        token = str(uuid.uuid4()) # -> generar token único para usuario
+        password_hash = make_password(data['usuario_contrasena'])  # -> hasheo de contraseña
+        
+        # -> creación usuario conductor
+        usuario = Usuario.objects.create(
+            usuario_nombre=data['usuario_nombre'],
+            usuario_apellido=data['usuario_apellido'],
+            usuario_correo=data['usuario_correo'],
+            usuario_contrasena=password_hash,
+            usuario_tipo='conductor',  # -> tipo conductor
+            usuario_auth_token=token
+        )
+
+        # -> serializar el usuario creado
+        serializer = self.get_serializer(usuario)
+        return Response({'token': token, 'usuario': serializer.data}, status=status.HTTP_201_CREATED)
 
 class EstadoEntregaViewSet(viewsets.ModelViewSet):
     queryset = Estado_entrega.objects.all()
@@ -68,7 +109,7 @@ class UserRegisterView(APIView):
         data = request.data
         
         # -> verificación completitud de campos
-        required_fields = ['nombre', 'correo', 'contrasena', 'tipo']
+        required_fields = ['nombre', 'apellido' , 'correo', 'contrasena', 'tipo']
         for field in required_fields:
             value = data.get(field)
             if value is None or str(value).strip() == '':
@@ -82,8 +123,10 @@ class UserRegisterView(APIView):
         token = str(uuid.uuid4()) # -> generar token único para usuario
         password_hash = make_password(data['contrasena']) # -> hasheo de contraseña
 
+        # -> creación usuario cliente
         usuario = Usuario.objects.create(
             usuario_nombre=data['nombre'],
+            usuario_apellido=data['apellido'],
             usuario_correo=data['correo'],
             usuario_tipo=data['tipo'],
             usuario_contrasena=password_hash,
@@ -94,7 +137,7 @@ class UserRegisterView(APIView):
         return Response({'token': token}, status=status.HTTP_201_CREATED)
 
 
-# -> view para login de usuarios (mobile app)
+# -> view para login de usuarios, clientes y conductores (mobile app)
 
 class UserLoginView(APIView):
 
@@ -109,7 +152,11 @@ class UserLoginView(APIView):
                 usuario.usuario_auth_token = str(uuid.uuid4())
                 usuario.save()
 
-            return Response({'token': usuario.usuario_auth_token})
+            return Response({
+                'token': usuario.usuario_auth_token,
+                'tipo': usuario.usuario_tipo, # -> tipo de usuario (cliente o conductor)
+                'nombre': usuario.usuario_nombre,
+            })
         
         return Response({'error': 'Credenciales inválidas'}, status=400)
 
@@ -156,7 +203,8 @@ class PaqueteRegisterView(APIView):
             usuario=usuario,
             paquete_peso=data['peso'],
             paquete_dimensiones=data['dimensiones'],
-            paquete_fecha_envio=data.get('fecha_envio', datetime.now().replace(microsecond=0)),
+            paquete_descripcion=data['descripcion'] if 'descripcion' in data else '',
+            paquete_fecha_envio=data.get('fecha_envio', timezone.now().replace(microsecond=0)),
             estado=estado_inicial
         )
 
@@ -184,6 +232,9 @@ class PaqueteListView(APIView):
                 'peso': paquete.paquete_peso,
                 'dimensiones': paquete.paquete_dimensiones,
                 'fecha_envio': paquete.paquete_fecha_envio,
+                'nombre': paquete.usuario.usuario_nombre,
+                'apellido': paquete.usuario.usuario_apellido,
+                'descripcion': paquete.paquete_descripcion,
                 'estado': paquete.estado.estado_nombre
             }
             for paquete in paquetes

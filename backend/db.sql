@@ -7,8 +7,9 @@ PRAGMA foreign_keys = ON;
 CREATE TABLE usuario (
     usuario_id INTEGER PRIMARY KEY AUTOINCREMENT,
     usuario_nombre TEXT NOT NULL,
+    usuario_apellido TEXT NOT NULL,
     usuario_correo TEXT UNIQUE NOT NULL,
-    usuario_tipo TEXT NOT NULL CHECK (usuario_tipo IN ('cliente', 'conductor', 'admin')),
+    usuario_tipo TEXT NOT NULL CHECK (usuario_tipo IN ('cliente', 'conductor')),
     usuario_fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     usuario_contrasena TEXT NOT NULL,
 
@@ -41,7 +42,8 @@ CREATE TABLE paquete (
     ruta_id INTEGER,
     estado_id INTEGER,
     paquete_peso REAL NOT NULL,
-    paquete_dimensiones TEXT,
+    paquete_dimensiones TEXT NOT NULL,
+    paquete_descripcion TEXT,
     paquete_fecha_envio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (usuario_id) REFERENCES usuario(usuario_id) ON DELETE CASCADE,
     FOREIGN KEY (ruta_id) REFERENCES ruta(ruta_id) ON DELETE SET NULL,

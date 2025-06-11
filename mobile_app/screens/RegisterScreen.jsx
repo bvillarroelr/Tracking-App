@@ -6,6 +6,7 @@ import { registerUser } from '../api/auth';
 export default function RegisterScreen({ navigation }) 
 {
     const [nombre, setNombre] = useState('');
+    const [apellido, setApellido] = useState('');
     const [correo, setCorreo] = useState('');
     const [contrasena, setContrasena] = useState('');
     const [confirmarContrasena, setConfirmarContrasena] = useState('');
@@ -25,13 +26,14 @@ export default function RegisterScreen({ navigation })
 
             const response = await registerUser({
                 nombre,
+                apellido,
                 correo,
                 contrasena,
                 tipo
             });
             
             // -> debug
-            console.log(nombre, correo, contrasena, tipo);           
+            console.log(nombre, apellido, correo, contrasena, tipo);           
 
 
             Alert.alert('Registro exitoso', 'Ya puedes iniciar sesión');
@@ -54,6 +56,14 @@ export default function RegisterScreen({ navigation })
         value={nombre}
         onChangeText={setNombre}
         />
+
+        <TextInput
+        placeholder="Apellido"
+        style={styles.input}
+        value={apellido}
+        onChangeText={setApellido}
+        />
+
 
         <TextInput
         placeholder="Correo"

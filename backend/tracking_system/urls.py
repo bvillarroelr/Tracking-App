@@ -16,7 +16,7 @@ router = DefaultRouter()
 # manuales con los que se comunica la app móvil (también habría que cambiar las rutas a ej: r'paquetes-admin')
 
 router.register(r'paquetes-admin', PaqueteViewSet, basename='paquetes-admin')
-# router.register(r'usuarios', UsuarioViewSet)
+router.register(r'conductores-admin', UsuarioViewSet, basename='conductores-admin')
 # router.register(r'estados_entrega', EstadoEntregaViewSet)
 # router.register(r'rutas', RutaViewSet)
 

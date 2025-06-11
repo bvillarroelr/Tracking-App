@@ -9,6 +9,7 @@ export default function RegisterPackageScreen({ navigation }) {
     const [largo, setLargo] = useState('');
     const [ancho, setAncho] = useState('');
     const [alto, setAlto] = useState('');
+    const [descripcion, setDescripcion] = useState('');
 
     const [loading, setLoading] = useState(false);
 
@@ -23,7 +24,7 @@ export default function RegisterPackageScreen({ navigation }) {
             const token = await AsyncStorage.getItem('token');
 
             const dimensiones = `${largo}x${ancho}x${alto}`; // -> formato largoxanchoxalto
-            const data = { peso: parseFloat(peso), dimensiones };
+            const data = { peso: parseFloat(peso), dimensiones, descripcion };
 
             const response = await paqueteRegister(data, token);
 
@@ -76,6 +77,15 @@ export default function RegisterPackageScreen({ navigation }) {
         keyboardType="numeric"
         style={styles.input}
         />
+
+        <TextInput
+        placeholder="Descripción (opcional). Aquí puedes agregar cualquier detalle u observación"
+        value={descripcion}
+        onChangeText={setDescripcion}
+        keyboardType="default"
+        style={styles.input}
+        />
+
 
         <Button
         title={loading ? 'Registrando...' : 'Registrar'}

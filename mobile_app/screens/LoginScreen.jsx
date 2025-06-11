@@ -36,9 +36,17 @@ export default function LoginScreen({ navigation })
             
             // -> guardar token en AsyncStorage
             await AsyncStorage.setItem('token', response.token);
-        
-            // -> navegar a mainscreen
-            navigation.navigate('Main');
+            await AsyncStorage.setItem('tipo', response.tipo);
+            await AsyncStorage.setItem('nombre', response.nombre);
+
+            if (response.tipo === 'conductor')
+            {
+                // -> navegar a pantalla main de conductor
+                navigation.navigate('DriverMain');
+            } else
+                // -> navegar a pantalla main de cliente
+                navigation.navigate('ClientMain');
+
         } catch (error) {
             console.error(error);
             Alert.alert('Error de inicio de sesión', error.message);

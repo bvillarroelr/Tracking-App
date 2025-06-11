@@ -4,7 +4,7 @@ import { View, Text, StyleSheet, Button } from 'react-native';
 
 
 // -> Pantalla principal de la app móvil
-export default function MainScreen({ navigation })
+export default function ClientMainScreen({ navigation })
 {
     return (
         <View style={styles.container}>

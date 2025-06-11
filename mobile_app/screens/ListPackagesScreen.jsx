@@ -46,6 +46,18 @@ export default function ListPackagesScreen({ navigation })
         setRefreshing(false);
     }, []);
 
+    const formatDate = (isoDate) => {
+        const date = new Date(isoDate);
+        const year = date.getFullYear().toString().slice(-2);
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const day = date.getDate().toString().padStart(2, '0');
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        const seconds = date.getSeconds().toString().padStart(2, '0');
+
+        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    };
+
     const renderItem = ({ item }) => (
         <TouchableOpacity
         style={styles.card}
@@ -54,7 +66,8 @@ export default function ListPackagesScreen({ navigation })
         <Text style={styles.title}>📦 Paquete #{item.id}</Text>
         <Text>Peso: {item.peso} kg</Text>
         <Text>Dimensiones: {item.dimensiones}</Text>
-        <Text>Fecha de envío: {item.fecha_envio}</Text>
+        <Text>Descripción: {item.descripcion}</Text>
+        <Text>Fecha de envío: {formatDate(item.fecha_envio)}</Text>
         <Text>Estado: {item.estado}</Text>
         </TouchableOpacity>
     );

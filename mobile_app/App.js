@@ -2,7 +2,8 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 
-import MainScreen from './screens/MainSreen';
+import ClientMainSreen from './screens/ClientMainSreen';
+import DriverMainScreen from './screens/DriverMainScreen';
 import RegisterScreen from './screens/RegisterScreen';
 import LoginScreen from './screens/LoginScreen';
 import RegisterPackageScreen from './screens/RegisterPackageScreen'
@@ -19,7 +20,8 @@ export default function App() {
 
         <Stack.Screen name="Login" component={LoginScreen} options={{ title: 'Login' }} />
         <Stack.Screen name="Register" component={RegisterScreen} options={{ title: 'Registro' }} />
-        <Stack.Screen name="Main" component={MainScreen} options={{ title: 'Inicio' }} />   
+        <Stack.Screen name="ClientMain" component={ClientMainSreen} options={{ title: 'Inicio' }} />  
+        <Stack.Screen name="DriverMain" component={DriverMainScreen} options={{ title: 'Inicio' }} />
         <Stack.Screen name="RegisterPackage" component={RegisterPackageScreen} options={{ title: 'Registrar paquete' }} />
         <Stack.Screen name="ListPackages" component={ListPackagesScreen} options={{ title: 'Lista de paquetes' }} />
 
