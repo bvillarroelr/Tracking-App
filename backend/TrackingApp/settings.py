@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "tracking_system",
     'rest_framework',
     'rest_framework.authtoken',
+    'corsheaders', # -> para permitir CORS
 ]
 
 REST_FRAMEWORK = {
@@ -59,6 +60,11 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware', # -> para permitir CORS
+]
+
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000', # -> URL de react local
 ]
 
 ROOT_URLCONF = 'TrackingApp.urls'

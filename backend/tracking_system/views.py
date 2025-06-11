@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny
+from rest_framework.permissions import IsAdminUser
 
 import uuid # -> para generar tokens únicos
 from django.contrib.auth.hashers import make_password, check_password # -> para hashing y verificación de contraseñas
@@ -21,11 +22,16 @@ ViewSet: clase de django REST Framework que agrupa automáticamente varias vista
          para un modelo en una sola clase, y gestiona operaciones CRUD automáticamente.
 """
 
-# ViewSets para CRUD de cada modelo
+# ------------ ENDPOINTS PARA ADMINISTRADORES -----------
+
+# ViewSets para CRUD de cada modelo (para app web/admin)
+# viewsets crean autimáticamente los endpoints para operaciones CRUD
+
 
 class PaqueteViewSet(viewsets.ModelViewSet):
     queryset = Paquete.objects.all()
     serializer_class = PaqueteSerializer
+    permission_classes = [IsAdminUser] # -> solo staff/superusers pueden acceder a estos endpoints
 
 class UsuarioViewSet(viewsets.ModelViewSet):
     queryset = Usuario.objects.all()
@@ -49,7 +55,7 @@ class PingView(APIView):
 
 
 
-# -------- ENDPOINTS REGISTRO/LOGIN DE USUARIOS --------
+# -------- ENDPOINTS REGISTRO/LOGIN DE USUARIOS APP MÓVIL --------
 
 # NOTE: Para app móvil, login/registro usa modelo Usuario de la DB, distinto a User de Django
 

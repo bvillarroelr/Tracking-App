@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import LoginForm from './LoginForm';
-import { paqueteList, obtenerRutaPaquetes } from './paquetes';
+import { paqueteList, obtenerRutaPaquetes } from './api/paquetes';
 import RouteMap from './RouteMap';
 import polyline from '@mapbox/polyline';
 
@@ -12,18 +12,18 @@ function App() {
   const [seleccionados, setSeleccionados] = useState([]);
 
   useEffect(() => {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('token'); // -> se obtiene el token de la sesión
       if (token) setIsAuthenticated(true);
   }, []);
 
   useEffect(() => {
       const cargarPaquetes = async () => {
           try {
-              const token = localStorage.getItem('token');
-              const data = await paqueteList(token);
+              const token = localStorage.getItem('token'); // -> se obtiene el token de la sesión
+              const data = await paqueteList(token); // -> se llama a la función para listar paquetes
               setPaquetes(data);
           } catch (error) {
-              setError("Error al cargar los paquetes");
+              console.error("Error al cargar los paquetes:", error.message);
           }
       };
       if (isAuthenticated) cargarPaquetes();
