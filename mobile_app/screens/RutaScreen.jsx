@@ -3,7 +3,6 @@ import { View, StyleSheet, Dimensions } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import MapViewDirections from 'react-native-maps-directions';
 
-const GOOGLE_MAPS_APIKEY = 'AIzaSyDtWhht3rjEbKWlFTfDBu2EoqZXFU5pZHk'; 
 
 export default function RutaScreen({ route }) {
     const { destinoLat, destinoLng } = route.params;
