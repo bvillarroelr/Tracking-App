@@ -1,7 +1,6 @@
 from django.db import models
 
 """
-# Create your models here.
 # This is an auto-generated Django model module.
 # You'll have to do the following manually to clean this up:
 #   * Rearrange models' order
@@ -150,6 +149,7 @@ class Paquete(models.Model):
     paquete_dimensiones = models.TextField()
     paquete_descripcion = models.TextField(blank=True, null=True)
     paquete_fecha_envio = models.TextField(blank=True, null=True)  # This field type is a guess.
+    paquete_destino = models.TextField()
 
     class Meta:
         managed = False
@@ -222,7 +222,6 @@ class Usuario(models.Model):
     class Meta:
         managed = False
         db_table = 'usuario'
-
 """
 
 
@@ -246,6 +245,7 @@ class Paquete(models.Model):
     paquete_dimensiones = models.TextField(blank=True, null=True)
     paquete_descripcion = models.TextField(blank=True, null=True)
     paquete_fecha_envio = models.DateTimeField(blank=True, null=True)  
+    paquete_destino = models.TextField()
 
     class Meta:
         managed = False
@@ -256,7 +256,10 @@ class Ruta(models.Model):
     ruta_id = models.AutoField(primary_key=True)
     ruta_origen = models.TextField()
     ruta_destino = models.TextField()
+    ruta_destino_latitud = models.FloatField(null=True, blank=True)
+    ruta_destino_longitud = models.FloatField(null=True, blank=True)
     ruta_distancia_km = models.FloatField()
+
     ruta_duracion_estimada_min = models.IntegerField()
 
     class Meta:

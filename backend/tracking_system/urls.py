@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import PaqueteViewSet, EstadoEntregaViewSet, UsuarioViewSet, RutaViewSet
 
-from .views import UserRegisterView, UserLoginView, PingView, PaqueteRegisterView, PaqueteListView, PaqueteDetailView
+from .views import UserRegisterView, UserLoginView, PingView, PaqueteRegisterView, PaqueteListView, PaqueteDetailView, PaquetesConRutaView
 
 from .views import GenerarRutaView
 
@@ -31,7 +31,8 @@ urlpatterns = [
     path('paquetes/registrar_paquete/', PaqueteRegisterView.as_view(), name='registrar_paquete'),
     path('paquetes/listar_paquetes/', PaqueteListView.as_view(), name='listar_paquetes'),
     path('paquetes/<int:id>/', PaqueteDetailView.as_view(), name='detalle_paquete'),
+    path('paquetes/listar_paquetes_con_ruta/', PaquetesConRutaView.as_view(), name='listar_paquetes_con_ruta'),
 
-    path('generar_ruta/', GenerarRutaView.as_view(), name='generar_ruta'),
+    path('generar_ruta/<int:paquete_id>/', GenerarRutaView.as_view(), name='generar_ruta'),
 
 ]

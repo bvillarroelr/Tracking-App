@@ -67,6 +67,7 @@ export default function ListPackagesScreen({ navigation })
         <Text>Peso: {item.peso} kg</Text>
         <Text>Dimensiones: {item.dimensiones}</Text>
         <Text>Descripción: {item.descripcion}</Text>
+        <Text>Destino: {item.destino}</Text>
         <Text>Fecha de envío: {formatDate(item.fecha_envio)}</Text>
         <Text>Estado: {item.estado}</Text>
         </TouchableOpacity>

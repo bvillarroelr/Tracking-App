@@ -30,6 +30,9 @@ CREATE TABLE ruta (
     ruta_id INTEGER PRIMARY KEY AUTOINCREMENT,
     ruta_origen TEXT NOT NULL,
     ruta_destino TEXT NOT NULL,
+    ruta_destino_latitud REAL NOT NULL,
+    ruta_destino_longitud REAL NOT NULL,
+
     ruta_distancia_km REAL NOT NULL,
     ruta_duracion_estimada_min INTEGER NOT NULL
 );
@@ -45,6 +48,9 @@ CREATE TABLE paquete (
     paquete_dimensiones TEXT NOT NULL,
     paquete_descripcion TEXT,
     paquete_fecha_envio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        
+    paquete_destino TEXT NOT NULL,
+
     FOREIGN KEY (usuario_id) REFERENCES usuario(usuario_id) ON DELETE CASCADE,
     FOREIGN KEY (ruta_id) REFERENCES ruta(ruta_id) ON DELETE SET NULL,
     FOREIGN KEY (estado_id) REFERENCES estado_entrega(estado_id) ON DELETE SET NULL

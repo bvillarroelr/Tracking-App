@@ -8,6 +8,8 @@ import RegisterScreen from './screens/RegisterScreen';
 import LoginScreen from './screens/LoginScreen';
 import RegisterPackageScreen from './screens/RegisterPackageScreen'
 import ListPackagesScreen from './screens/ListPackagesScreen';
+import RutaScreen from './screens/RutaScreen';
+
 
 const Stack = createStackNavigator();
 
@@ -24,6 +26,7 @@ export default function App() {
         <Stack.Screen name="DriverMain" component={DriverMainScreen} options={{ title: 'Inicio' }} />
         <Stack.Screen name="RegisterPackage" component={RegisterPackageScreen} options={{ title: 'Registrar paquete' }} />
         <Stack.Screen name="ListPackages" component={ListPackagesScreen} options={{ title: 'Lista de paquetes' }} />
+        <Stack.Screen name="RutaScreen" component={RutaScreen} options={{ title: 'Ruta' }} />
 
         </Stack.Navigator>
 

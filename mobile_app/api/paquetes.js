@@ -4,4 +4,6 @@ export const paqueteRegister = (data, token) => fetchData('paquetes/registrar_pa
 
 export const paqueteList = (token) => fetchData('paquetes/listar_paquetes/', 'GET', null, token);
 
+export const listaPaquetesConRuta = (token) => fetchData('paquetes/listar_paquetes_con_ruta/', 'GET', null, token);
+
 export const paqueteDetail = (id, token) => fetchData(`paquetes/${id}/`, 'GET', null, token);

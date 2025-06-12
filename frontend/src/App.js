@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 import LoginForm from './LoginForm';
-import { paqueteList } from './api/paquetes'; 
+import { paqueteList, generarRutaPaquete } from './api/paquetes'; 
 import RegisterDriver from './RegisterDriver';
 
 
@@ -26,6 +26,7 @@ export default function App() {
         });
     }
 
+    // NOTE: SI HAY ALGUN ERROR DE LOGIN, EJECUTAR CON REMOVEITEM PARA RESETEAR TOKEN, FORZAR LOGIN Y LUEGO DEJARLO COMO ESTABA
     useEffect(() => {
         // localStorage.removeItem('token'); // -> descomentar para eliminar token de la sesión (para forzar login)
         const token = localStorage.getItem('token'); // -> se obtiene el token de la sesión
@@ -107,8 +108,43 @@ export default function App() {
                 <p><strong>Peso:</strong> {paquete.paquete_peso} kg</p>
                 <p><strong>Dimensiones:</strong> {paquete.paquete_dimensiones}cm</p>
                 <p><strong>Descripción:</strong> {paquete.paquete_descripcion}</p>
+                <p><strong>Destino:</strong> {paquete.paquete_destino}</p>
                 <p><strong>Estado:</strong> {paquete.estado_nombre|| paquete.estado}</p>
                 <p><strong>Fecha de Envío:</strong> {formatDate(paquete.paquete_fecha_envio)}</p>
+                
+                {!paquete.ruta && (
+                    <button
+                    style={{ marginTop: '10px' }}
+                    onClick={async () => {
+                        const confirm = window.confirm("¿Generar ruta para este paquete?");
+                        if (!confirm) return;
+
+                        try {
+                            const token = localStorage.getItem('token');
+                            await generarRutaPaquete(paquete.paquete_id, token);
+
+                            alert("Ruta generada correctamente");
+
+                            // Actualizamos localmente para ocultar el botón sin recargar
+                            setPaquetes((prev) =>
+                                prev.map((p) =>
+                                    p.paquete_id === paquete.paquete_id ? { ...p, ruta: true } : p
+                                )
+                            );
+
+                        } catch (error) {
+                            alert("Error de red: " + error.message);
+                        }
+                    }}
+                    >
+                    Generar Ruta
+                    </button>
+                )}
+
+                {paquete.ruta && (
+                    <p style={{ color: 'green' }}>Ruta generada correctamente.</p>
+                )}
+
                 </li>
             ))}
             </ul>

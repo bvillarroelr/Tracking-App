@@ -16,6 +16,8 @@ from datetime import datetime
 from django.utils import timezone
 
 from django.conf import settings
+import requests
+import json
 
 """
 ViewSet: clase de django REST Framework que agrupa automáticamente varias vistas (endpoints)
@@ -187,7 +189,7 @@ class PaqueteRegisterView(APIView):
         data = request.data
 
         # -> validación completitud de campos
-        required_fields = ['peso', 'dimensiones']
+        required_fields = ['peso', 'dimensiones', 'destino']
         for field in required_fields:
             value = data.get(field)
             if value is None or str(value).strip() == '':
@@ -205,6 +207,7 @@ class PaqueteRegisterView(APIView):
             paquete_dimensiones=data['dimensiones'],
             paquete_descripcion=data['descripcion'] if 'descripcion' in data else '',
             paquete_fecha_envio=data.get('fecha_envio', timezone.now().replace(microsecond=0)),
+            paquete_destino=data.get('destino', ''),
             estado=estado_inicial
         )
 
@@ -235,6 +238,7 @@ class PaqueteListView(APIView):
                 'nombre': paquete.usuario.usuario_nombre,
                 'apellido': paquete.usuario.usuario_apellido,
                 'descripcion': paquete.paquete_descripcion,
+                'destino': paquete.paquete_destino,
                 'estado': paquete.estado.estado_nombre
             }
             for paquete in paquetes
@@ -280,31 +284,154 @@ class PaqueteDetailView(APIView):
         return Response(data, status=200)
 
 
+# endpoint para obtener todos los paquetes que tengan una ruta asociada (para conductores)
+
+class PaquetesConRutaView(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        token = request.headers.get('Authorization', '').replace('token ', '')
+        usuario = Usuario.objects.filter(usuario_auth_token=token).first()
+
+        print(f"Token recibido: {token}")
+
+        if not usuario:
+            return Response({'error': 'Token inválido'}, status=401)
+
+        # Si deseas que solo se muestren los paquetes asignados a rutas donde este usuario es responsable, agrega filtro por usuario aquí
+
+        paquetes_con_ruta = Paquete.objects.filter(ruta__isnull=False).order_by('paquete_id')
+
+        data = [
+                {
+                    'paquete_id': paquete.paquete_id,
+                    'usuario_nombre': paquete.usuario.usuario_nombre,
+                    'usuario_apellido': paquete.usuario.usuario_apellido,
+                    'usuario_correo': paquete.usuario.usuario_correo,
+                    'paquete_destino': paquete.paquete_destino,
+                    'paquete_peso': paquete.paquete_peso,
+                    'paquete_descripcion': paquete.paquete_descripcion,
+                    'estado_nombre': paquete.estado.estado_nombre if paquete.estado else 'Sin estado'
+                    }
+                for paquete in paquetes_con_ruta
+                ]
+
+        return Response(data, status=status.HTTP_200_OK)
+
 # endpoint para generar una ruta entre origen y destino usando Google Maps API
 
 class GenerarRutaView(APIView):
-    def post(self, request):
-        
-        origen = request.data.get('origen')  # {'lat': ..., 'lng': ...}
-        destino = request.data.get('destino')
-        
-        if not origen or not destino:
-            return Response({'error': 'Origen y destino requeridos'}, status=400)
-        
-        url = "https://routes.googleapis.com/directions/v2:computeRoutes"
-        
+    def post(self, request, paquete_id):
+        print(f"APi KEY: {settings.GOOGLE_MAPS_API_KEY}")
+        print(f"Generando ruta para paquete ID: {paquete_id}")
+
+        try:
+            paquete = Paquete.objects.get(paquete_id=paquete_id)
+        except Paquete.DoesNotExist:
+            return Response({'error': 'Paquete no encontrado'}, status=404)
+
+        # NOTE: POR SIMPLICIDAD PREMATURA, POR AHORA SE ASUMIRA QUE TODAS LOS DESTINOS ESTÁN EN CONCEPCIÓN, CHILE
+        destino_texto = paquete.paquete_destino
+        destino_texto = destino_texto.strip() + ", Concepción, Chile"
+
+        # -> se asumen coordenadas fijas de origen para simplificar (UDEC)
+        origen = {
+                'latLng': {
+                    'latitude': -36.8263,  # Latitud de UDEC
+                    'longitude': -73.0493  # Longitud de UDEC
+                    }
+                }
+
+        # -> geocodificar destino
+        print(f"Geocodificando destino: {destino_texto}")
+        geocode_url = "https://maps.googleapis.com/maps/api/geocode/json"
+        geocode_params = {
+                "address": destino_texto,
+                "key": settings.GOOGLE_MAPS_API_KEY
+                }
+
+        geocode_resp = requests.get(geocode_url, params=geocode_params)
+        if geocode_resp.status_code != 200:
+            return Response({'error': 'Error al geocodificar destino'}, status=500)
+
+        geocode_data = geocode_resp.json()
+        print("Respuesta de geocode:", json.dumps(geocode_data, indent=2))
+        if not geocode_data["results"]:
+            return Response({'error': 'Dirección destino no encontrada'}, status=400)
+
+        destino_coords = geocode_data["results"][0]["geometry"]["location"]
+
+        origen_lat = origen['latLng']['latitude']
+        origen_lng = origen['latLng']['longitude']
+        destino_lat = destino_coords['lat']
+        destino_lng = destino_coords['lng']
+
+        # Paso 2: calcular ruta
+        ruta_url = "https://routes.googleapis.com/directions/v2:computeRoutes"
         headers = {
-            "Content-Type": "application/json",
-            "X-Goog-Api-Key": settings.GOOGLE_MAPS_API_KEY,
-            "X-Goog-FieldMask": "routes.polyline.encodedPolyline,routes.distanceMeters,routes.duration"
-        }
+                "Content-Type": "application/json",
+                "X-Goog-Api-Key": settings.GOOGLE_MAPS_API_KEY,
+                "X-Goog-FieldMask": "routes.polyline.encodedPolyline,routes.distanceMeters,routes.duration"
+                }
 
         data = {
-            "origin": {"location": {"latLng": origen}},
-            "destination": {"location": {"latLng": destino}},
-            "travelMode": "DRIVE"
+                "origin": {
+                    "location": {
+                        "latLng": {
+                            "latitude": origen_lat,
+                            "longitude": origen_lng
+                            }
+                        }
+                    },
+                "destination": {
+                    "location": {
+                        "latLng": {
+                            "latitude": destino_lat,
+                            "longitude": destino_lng
+                            }
+                        }
+                    },
+                "travelMode": "DRIVE"
         }
-        resp = requests.post(url, json=data, headers=headers)
-        if resp.status_code != 200:
-            return Response({'error': 'Error consultando Google Maps'}, status=500)
-        return Response(resp.json())
+
+
+        ruta_resp = requests.post(ruta_url, json=data, headers=headers)
+        print("Status ruta:", ruta_resp.status_code)
+        print("Respuesta ruta:", ruta_resp.text)
+       
+        if ruta_resp.status_code != 200:
+            return Response({'error': 'Error consultando ruta'}, status=500)
+
+        ruta_data = ruta_resp.json()
+
+        if not ruta_data.get("routes"):
+            return Response({'error': 'No se encontró una ruta válida'}, status=400)
+
+        ruta = ruta_data["routes"][0]
+        polyline = ruta["polyline"]["encodedPolyline"]
+        distancia_m = ruta["distanceMeters"]
+        duracion_str = ruta["duration"]  # p. ej. "1234s"
+        duracion_min = int(int(duracion_str.replace("s", "")) / 60)
+
+        # -> crear nueva ruta
+        nueva_ruta = Ruta.objects.create(
+                ruta_origen="UDEC (-36.8263, -73.0493)",
+                ruta_destino=destino_texto,
+                ruta_destino_latitud=destino_lat,
+                ruta_destino_longitud=destino_lng,
+                ruta_distancia_km=round(distancia_m / 1000, 2),
+                ruta_duracion_estimada_min=duracion_min
+                )
+
+        # -> asociar nueva ruta al paquete
+        paquete.ruta = nueva_ruta
+        paquete.save()
+
+        return Response({
+            "mensaje": "Ruta generada correctamente",
+            "ruta_id": nueva_ruta.ruta_id,
+            "polyline": polyline,
+            "distancia_km": nueva_ruta.ruta_distancia_km,
+            "duracion_min": nueva_ruta.ruta_duracion_estimada_min
+            })
