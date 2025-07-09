@@ -22,7 +22,7 @@ Luego, para ejecutar la app **dentro del entorno virtual**:
 ```
 pipenv shell
 python manage.py migrate
-python manage.py runserver
+python manage.py runserver 0.0.0.0:8000
 ```
 
 # Front-end
@@ -64,11 +64,11 @@ npm install
 yarn install
 ```
 
-Previo a ejecutar la aplicación, se debe editar el archivo './mobile_app/api/index.js' y cambiar la URL a la IP local del PC donde se esté ejecutando el backend:
+Previo a ejecutar la aplicación, se debe editar el archivo './mobile_app/api/index.js' y cambiar la URL a la IPV4 local del PC donde se esté ejecutando el backend:
 
 ```javascript
 
-const BASE_URL = "http://<IP_LOCAL>:8000/api/"; 
+const BASE_URL = "http://192.168.1.x:8000/api/"; 
 ```
 
 Para ejecutar la aplicación móvil, desde la raíz del proyecto:
@@ -82,15 +82,4 @@ npx expo start
 Aparecerá un código QR en la terminal, el cual se debe escanear con la aplicación Expo Go instalada en el dispositivo móvil.
 
 **NOTA**: Tanto el dispositivo móvil como el PC deben estar conectados a la misma red WiFi.
-
-Finalmente, para levantar el backend al que se conectará la aplicación móvil, se debe ejecutar el siguiente comando en una terminal diferente,
-y estando previamente dentro del entorno virtual de pipenv:
-
-(desde raíz del proyecto):
-```
-cd backend
-
-python manage.py runserver 0.0.0.0:8000
-```
-
 
