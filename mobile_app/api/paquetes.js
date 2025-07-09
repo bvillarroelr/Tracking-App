@@ -7,3 +7,5 @@ export const paqueteList = (token) => fetchData('paquetes/listar_paquetes/', 'GE
 export const listaPaquetesConRuta = (token) => fetchData('paquetes/listar_paquetes_con_ruta/', 'GET', null, token);
 
 export const paqueteDetail = (id, token) => fetchData(`paquetes/${id}/`, 'GET', null, token);
+
+export const marcarComoEntregado = (paqueteId, token) => fetchData(`paquetes/${paqueteId}/marcar_entregado/`, 'POST', null, token);

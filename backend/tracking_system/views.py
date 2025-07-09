@@ -93,8 +93,8 @@ class RutaViewSet(viewsets.ModelViewSet):
 
 class PingView(APIView):
     def get(self, request):
-        print("Ping recibido lol")
-        return Response({'message': 'Correctamente conectado al backend kumpa'}, status=status.HTTP_200_OK)
+        print("Ping recibido")
+        return Response({'message': 'Correctamente conectado al backend'}, status=status.HTTP_200_OK)
 
 
 
@@ -284,7 +284,7 @@ class PaqueteDetailView(APIView):
         return Response(data, status=200)
 
 
-# endpoint para obtener todos los paquetes que tengan una ruta asociada (para conductores)
+# -> endpoint para obtener todos los paquetes que tengan una ruta asociada (para conductores)
 
 class PaquetesConRutaView(APIView):
     authentication_classes = []
@@ -312,18 +312,23 @@ class PaquetesConRutaView(APIView):
                     'paquete_destino': paquete.paquete_destino,
                     'paquete_peso': paquete.paquete_peso,
                     'paquete_descripcion': paquete.paquete_descripcion,
-                    'estado_nombre': paquete.estado.estado_nombre if paquete.estado else 'Sin estado'
+                    'estado_nombre': paquete.estado.estado_nombre if paquete.estado else 'Sin estado',
+                    'ruta_polyline': paquete.ruta.ruta_polyline if paquete.ruta else None,
+                    'ruta_destino_latitud': paquete.ruta.ruta_destino_latitud if paquete.ruta else None,
+                    'ruta_destino_longitud': paquete.ruta.ruta_destino_longitud if paquete.ruta else None,
+                    'ruta_origen': paquete.ruta.ruta_origen if paquete.ruta else None,
+                    'ruta_distancia_km': paquete.ruta.ruta_distancia_km if paquete.ruta else None,
+                    'ruta_duracion_estimada_min': paquete.ruta.ruta_duracion_estimada_min if paquete.ruta else None,
                     }
                 for paquete in paquetes_con_ruta
                 ]
 
         return Response(data, status=status.HTTP_200_OK)
 
-# endpoint para generar una ruta entre origen y destino usando Google Maps API
-
+# -> endpoint para generar una ruta entre origen y destino usando Google Maps API
 class GenerarRutaView(APIView):
     def post(self, request, paquete_id):
-        print(f"APi KEY: {settings.GOOGLE_MAPS_API_KEY}")
+        # print(f"APi KEY: {settings.GOOGLE_MAPS_API_KEY}")
         print(f"Generando ruta para paquete ID: {paquete_id}")
 
         try:
@@ -338,8 +343,8 @@ class GenerarRutaView(APIView):
         # -> se asumen coordenadas fijas de origen para simplificar (UDEC)
         origen = {
                 'latLng': {
-                    'latitude': -36.8263,  # Latitud de UDEC
-                    'longitude': -73.0493  # Longitud de UDEC
+                    'latitude': -36.83101365,  
+                    'longitude': -73.03468092 
                     }
                 }
 
@@ -416,12 +421,13 @@ class GenerarRutaView(APIView):
 
         # -> crear nueva ruta
         nueva_ruta = Ruta.objects.create(
-                ruta_origen="UDEC (-36.8263, -73.0493)",
+                ruta_origen="UDEC (-36.83101365, -73.03468092)",
                 ruta_destino=destino_texto,
                 ruta_destino_latitud=destino_lat,
                 ruta_destino_longitud=destino_lng,
                 ruta_distancia_km=round(distancia_m / 1000, 2),
-                ruta_duracion_estimada_min=duracion_min
+                ruta_duracion_estimada_min=duracion_min,
+                ruta_polyline=polyline  
                 )
 
         # -> asociar nueva ruta al paquete
@@ -432,6 +438,36 @@ class GenerarRutaView(APIView):
             "mensaje": "Ruta generada correctamente",
             "ruta_id": nueva_ruta.ruta_id,
             "polyline": polyline,
-            "distancia_km": nueva_ruta.ruta_distancia_km,
-            "duracion_min": nueva_ruta.ruta_duracion_estimada_min
+            "ruta_distancia_km": round(distancia_m / 1000, 2),
+            "ruta_duracion_estimada_min": duracion_min,
+            "ruta_destino_latitud": nueva_ruta.ruta_destino_latitud,
+            "ruta_destino_longitud": nueva_ruta.ruta_destino_longitud
             })
+
+# -> endpoint para marcar un paquete como entregado
+class MarcarEntregadoView(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def post(self, request, paquete_id):
+        token = request.headers.get('Authorization', '').replace('token ', '')
+        usuario = Usuario.objects.filter(usuario_auth_token=token).first()
+
+        if not usuario:
+            return Response({'error': 'Token inválido'}, status=401)
+
+        try:
+            paquete = Paquete.objects.get(paquete_id=paquete_id)
+        except Paquete.DoesNotExist:
+            return Response({'error': 'Paquete no encontrado'}, status=404)
+
+        try:
+            estado_entregado = Estado_entrega.objects.get(estado_nombre='Entregado')
+        except Estado_entrega.DoesNotExist:
+            # Si el estado no existe, lo creamos por única vez.
+            estado_entregado = Estado_entrega.objects.create(estado_nombre='Entregado')
+
+        paquete.estado = estado_entregado
+        paquete.save()
+
+        return Response({'message': 'Paquete marcado como entregado.'}, status=200)

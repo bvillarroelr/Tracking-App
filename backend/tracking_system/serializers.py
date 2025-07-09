@@ -6,10 +6,16 @@ class PaqueteSerializer(serializers.ModelSerializer):
     usuario_nombre = serializers.CharField(source='usuario.usuario_nombre', read_only=True)
     usuario_apellido = serializers.CharField(source='usuario.usuario_apellido', read_only=True)
     usuario_correo = serializers.CharField(source='usuario.usuario_correo', read_only=True)
+    ruta = serializers.SerializerMethodField() # Campo para la ruta
 
     class Meta:
         model = Paquete
         fields = '__all__'
+
+    def get_ruta(self, obj):
+        if obj.ruta:
+            return RutaSerializer(obj.ruta).data
+        return None
 
 class UsuarioSerializer(serializers.ModelSerializer):
     class Meta:

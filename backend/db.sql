@@ -1,4 +1,4 @@
--- Habilitar claves foráneas en SQLite
+-- Habilitar claves forï¿½neas en SQLite
 
 PRAGMA foreign_keys = ON;
 
@@ -34,7 +34,8 @@ CREATE TABLE ruta (
     ruta_destino_longitud REAL NOT NULL,
 
     ruta_distancia_km REAL NOT NULL,
-    ruta_duracion_estimada_min INTEGER NOT NULL
+    ruta_duracion_estimada_min INTEGER NOT NULL,
+    ruta_polyline TEXT
 );
 
 -- Tabla de Paquetes

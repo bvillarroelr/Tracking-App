@@ -37,8 +37,11 @@ export default function ListPackagesScreen({ navigation })
     };
 
     useEffect(() => {
-        loadPaquetes();
-    }, [])
+        const unsubscribe = navigation.addListener('focus', () => {
+            loadPaquetes();
+        });
+        return unsubscribe;
+    }, [navigation]);
 
     const onRefresh = useCallback(async () => {
         setRefreshing(true);
@@ -47,30 +50,44 @@ export default function ListPackagesScreen({ navigation })
     }, []);
 
     const formatDate = (isoDate) => {
+        if (!isoDate) return 'N/A';
         const date = new Date(isoDate);
         const year = date.getFullYear().toString().slice(-2);
         const month = (date.getMonth() + 1).toString().padStart(2, '0');
         const day = date.getDate().toString().padStart(2, '0');
         const hours = date.getHours().toString().padStart(2, '0');
         const minutes = date.getMinutes().toString().padStart(2, '0');
-        const seconds = date.getSeconds().toString().padStart(2, '0');
 
-        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+        return `${day}-${month}-${year} ${hours}:${minutes}`;
     };
 
     const renderItem = ({ item }) => (
-        <TouchableOpacity
-        style={styles.card}
-        onPress={() => navigation.navigate('PackageDetailScreen', { paqueteId: item.id })}
-        >
-        <Text style={styles.title}>📦 Paquete #{item.id}</Text>
-        <Text>Peso: {item.peso} kg</Text>
-        <Text>Dimensiones: {item.dimensiones}</Text>
-        <Text>Descripción: {item.descripcion}</Text>
-        <Text>Destino: {item.destino}</Text>
-        <Text>Fecha de envío: {formatDate(item.fecha_envio)}</Text>
-        <Text>Estado: {item.estado}</Text>
-        </TouchableOpacity>
+        <View style={styles.card}>
+            <Text style={styles.title}>📦 Paquete #{item.paquete_id}</Text>
+            <Text>Cliente: {item.usuario_nombre} {item.usuario_apellido}</Text>
+            <Text>Peso: {item.paquete_peso} kg</Text>
+            <Text>Dimensiones: {item.paquete_dimensiones}</Text>
+            <Text>Descripción: {item.paquete_descripcion}</Text>
+            <Text>Destino: {item.paquete_destino}</Text>
+            <Text>Fecha de envío: {formatDate(item.paquete_fecha_envio)}</Text>
+            <Text>Estado: {item.estado_nombre}</Text>
+
+            {item.ruta && (
+                <TouchableOpacity
+                    style={styles.button}
+                    onPress={() => navigation.navigate('RutaScreen', {
+                        polyline: item.ruta.ruta_polyline,
+                        destinoLat: item.ruta.ruta_destino_latitud,
+                        destinoLng: item.ruta.ruta_destino_longitud,
+                        origen: item.ruta.ruta_origen,
+                        distancia: item.ruta.ruta_distancia_km,
+                        duracion: item.ruta.ruta_duracion_estimada_min,
+                    })}
+                >
+                    <Text style={styles.buttonText}>Ver Ruta en el Mapa</Text>
+                </TouchableOpacity>
+            )}
+        </View>
     );
 
     if (loading) {
@@ -86,7 +103,7 @@ export default function ListPackagesScreen({ navigation })
         {error ? <Text style={styles.error}>{error}</Text> : null}
         <FlatList
         data={paquetes}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => item.paquete_id.toString()}
         renderItem={renderItem}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         ListEmptyComponent={<Text style={styles.empty}>No hay paquetes registrados.</Text>}
@@ -134,6 +151,19 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginTop: 20,
         fontStyle: 'italic',
+    },
+
+    button: {
+        marginTop: 12,
+        backgroundColor: '#007AFF',
+        paddingVertical: 10,
+        borderRadius: 8,
+        alignItems: 'center',
+    },
+
+    buttonText: {
+        color: '#fff',
+        fontWeight: 'bold',
     },
 
 });

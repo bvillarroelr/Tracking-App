@@ -14,6 +14,10 @@ export default function App() {
 
     const [mensajeRegistro, setMensajeRegistro] = useState('');
 
+    const [showMap, setShowMap] = useState(false); // Nuevo estado para controlar la visibilidad del mapa
+    const [mapData, setMapData] = useState(null); // Nuevo estado para almacenar los datos de la ruta para el mapa
+
+
     // -> formateo de fecha
     const formatDate = (dateString) => {
         const date = new Date(dateString);
@@ -40,7 +44,16 @@ export default function App() {
             try {
                 const token = localStorage.getItem('token'); // -> se obtiene el token de la sesión
                 const data = await paqueteList(token); // -> se llama a la función para listar paquetes
-                setPaquetes(data);
+                const paquetesConMapData = data.map(p => {
+                    if (p.ruta) {
+                        return { ...p, mapData: p.ruta };
+                    }
+                    return p;
+                });
+                setPaquetes(paquetesConMapData);
+                
+                console.log("Google maps API key:", process.env.GOOGLE_MAPS_API_KEY);
+
             } catch (error) {
                 console.error("Error al cargar los paquetes:", error.message);
             }
@@ -121,14 +134,14 @@ export default function App() {
 
                         try {
                             const token = localStorage.getItem('token');
-                            await generarRutaPaquete(paquete.paquete_id, token);
+                            const response = await generarRutaPaquete(paquete.paquete_id, token); 
 
                             alert("Ruta generada correctamente");
 
                             // Actualizamos localmente para ocultar el botón sin recargar
                             setPaquetes((prev) =>
                                 prev.map((p) =>
-                                    p.paquete_id === paquete.paquete_id ? { ...p, ruta: true } : p
+                                    p.paquete_id === paquete.paquete_id ? { ...p, ruta: true, mapData: response } : p
                                 )
                             );
 
@@ -142,7 +155,18 @@ export default function App() {
                 )}
 
                 {paquete.ruta && (
-                    <p style={{ color: 'green' }}>Ruta generada correctamente.</p>
+                    <>
+                        <p style={{ color: 'green' }}>Ruta generada correctamente.</p>
+                        <button
+                            style={{ marginTop: '10px', marginLeft: '10px' }}
+                            onClick={() => {
+                                setMapData(paquete.mapData); // Usar los datos de ruta almacenados en el paquete
+                                setShowMap(true);
+                            }}
+                        >
+                            Visualizar Ruta
+                        </button>
+                    </>
                 )}
 
                 </li>
@@ -150,8 +174,61 @@ export default function App() {
             </ul>
         )}
         </section>
+
+        {showMap && mapData && (
+            <div style={{ 
+                position: 'fixed', 
+                top: '0', 
+                left: '0', 
+                width: '100%', 
+                height: '100%', 
+                backgroundColor: 'rgba(0,0,0,0.8)', 
+                display: 'flex', 
+                justifyContent: 'center', 
+                alignItems: 'center',
+                zIndex: 1000
+            }}>
+                <div style={{ 
+                    backgroundColor: 'white', 
+                    padding: '20px', 
+                    borderRadius: '8px', 
+                    position: 'relative',
+                    width: '90%',
+                    maxWidth: '800px',
+                    height: '90%',
+                    maxHeight: '600px',
+                    display: 'flex',
+                    flexDirection: 'column'
+                }}>
+                    <button 
+                        onClick={() => setShowMap(false)} 
+                        style={{ 
+                            position: 'absolute', 
+                            top: '10px', 
+                            right: '10px', 
+                            background: 'none', 
+                            border: 'none', 
+                            fontSize: '1.5rem', 
+                            cursor: 'pointer' 
+                        }}
+                    >
+                        &times;
+                    </button>
+                    <h2>Ruta del Paquete {mapData.paquete_id}</h2>
+                    {console.log("Polyline para el mapa:", mapData.polyline)}
+                    <iframe
+                        width="100%"
+                        height="100%"
+                        style={{ border: 0, flexGrow: 1 }}
+                        loading="lazy"
+                        allowFullScreen
+                        referrerPolicy="no-referrer-when-downgrade"
+                        src={`https://www.google.com/maps/embed/v1/directions?key=${process.env.REACT_APP_GOOGLE_MAPS_API_KEY}&origin=UDEC&destination=${mapData.ruta_destino_latitud},${mapData.ruta_destino_longitud}&mode=driving&avoid=tolls|highways&waypoints=enc:${mapData.polyline}`}
+                    ></iframe>
+                </div>
+            </div>
+        )}
         </div>
 
     );
 }
-
